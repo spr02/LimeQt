@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <string>
+#include <bitset>
 
 LimeSDRDevice::LimeSDRDevice()
 {
@@ -19,6 +20,9 @@ LimeSDRDevice::LimeSDRDevice()
     m_rx_stream_worker = NULL;
     m_tx_stream_worker = NULL;
     m_tx_antenna = "BAND1";
+
+    //initialize device pointer to null
+    m_sdr_dev = NULL;
 
     /*
     m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 10.0e6);
@@ -70,27 +74,30 @@ LimeSDRDevice::~LimeSDRDevice()
     delete m_rx_stream_worker;
     delete m_tx_stream_worker;
 
-    //try to close all streams
-    try
+    //try to close all streams (if device was instantiated in first place)
+    if(m_sdr_dev != NULL)
     {
-        m_sdr_dev->deactivateStream(m_rx_stream);
-        m_sdr_dev->deactivateStream(m_tx_stream);
-        m_sdr_dev->closeStream(m_rx_stream);
-        m_sdr_dev->closeStream(m_tx_stream);
-    }
-    catch (const std::exception &ex)
-    {
-        std::cerr << "Error closing streams: " << ex.what() << std::endl;
-    }
+        try
+        {
+            m_sdr_dev->deactivateStream(m_rx_stream);
+            m_sdr_dev->deactivateStream(m_tx_stream);
+            m_sdr_dev->closeStream(m_rx_stream);
+            m_sdr_dev->closeStream(m_tx_stream);
+        }
+        catch (const std::exception &ex)
+        {
+            std::cerr << "Error closing streams: " << ex.what() << std::endl;
+        }
 
-    //try to unmake soapysdr device
-    try
-    {
-        SoapySDR::Device::unmake(m_sdr_dev);
-    }
-    catch (const std::exception &ex)
-    {
-        std::cerr << "Error unmaking device: " << ex.what() << std::endl;
+        //try to unmake soapysdr device
+        try
+        {
+            SoapySDR::Device::unmake(m_sdr_dev);
+        }
+        catch (const std::exception &ex)
+        {
+            std::cerr << "Error unmaking device: " << ex.what() << std::endl;
+        }
     }
 }
 
@@ -115,6 +122,8 @@ void LimeSDRDevice::connect(QString p_argStr)
         std::cerr << "Error making device: " << ex.what() << std::endl;
     }
 
+
+
     m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 5.0e6);
     m_sdr_dev->setFrequency(SOAPY_SDR_RX, 0, 106.0e6);
     m_sdr_dev->setAntenna(SOAPY_SDR_RX, 0, "LNAL");
@@ -129,6 +138,8 @@ void LimeSDRDevice::connect(QString p_argStr)
     m_sdr_dev->setGain(SOAPY_SDR_TX, 0, "PAD", -50);
     m_sdr_dev->setBandwidth(SOAPY_SDR_TX, 0, 30000000.0);
 
+    //int tmp = m_sdr_dev->readRegister(0x0020);
+    //std::cout << tmp << std::endl;
 
     //setup and streams in order to get MTU size
     m_rx_stream = m_sdr_dev->setupStream(SOAPY_SDR_RX, SOAPY_SDR_CS16, {0});

@@ -59,7 +59,8 @@ void LimeTxStreamWorker::run(void)
         //fill buffer with values from queue
         for(int k=0;k<m_BUFF_SIZE;k++)
         {
-            m_tx_buffer[k] = m_ring_buffer->pop();
+            //m_tx_buffer[k] = m_ring_buffer->pop();
+            while(!m_ring_buffer->try_pop(&m_tx_buffer[k]) && m_work);
         }
 
         //write buffer to sdr

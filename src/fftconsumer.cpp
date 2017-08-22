@@ -92,7 +92,9 @@ void FFTConsumer::run(void)
 
         for(int k=0;k<1024;k++)
         {
-            std::complex<int16_t> tmp = m_consume_buffer->pop();
+            std::complex<int16_t> tmp;
+            //std::complex<int16_t> tmp = m_consume_buffer->pop();
+            while(!m_consume_buffer->try_pop(&tmp) && m_work);
             m_fft_window[k] = alglib::complex(w_window[k]*tmp.real(), w_window[k]*tmp.imag());
         }
 
@@ -121,9 +123,8 @@ void FFTConsumer::run(void)
         cnt++;
 
     }
-    std::cout << "fft worker finished" << std::endl;
     emit finished();
-
+    std::cout << "fft worker finished" << std::endl;
 }
 
 

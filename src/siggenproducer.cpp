@@ -43,7 +43,7 @@ void SigGenProducer::resume (void)
     m_pause_cond.wakeAll();
 }
 
-/*
+
 void SigGenProducer::run(void)
 {
     std::srand(time(NULL));
@@ -51,8 +51,8 @@ void SigGenProducer::run(void)
 
     const double mean = 0.0;
     const double stddev = 1.0;
-    std::default_random_engine generator;
-    std::normal_distribution<double> dist(mean, stddev);
+    //std::default_random_engine generator;
+    //std::normal_distribution<double> dist(mean, stddev);
 
     double tmp_real = 0;
     double tmp_imag = 0;
@@ -85,20 +85,22 @@ void SigGenProducer::run(void)
         std::complex<int16_t> tmp(tmp_real, tmp_imag);
 
 
+//        std::complex<int16_t> tmp((std::rand() % 2 * 8192) - 8192, (std::rand() % 2 * 8192) - 8192);
+
         //std::complex<int16_t> tmp = 8192.0 * std::exp(m_j * m_phase_acc);
         //std::complex<int16_t> tmp((std::rand() % 2*8192)-8192, (std::rand() % 2*8192)-8192);
         //std::complex<int16_t> tmp(8192.0 * dist(generator), 8192.0 * dist(generator));
 
         //m_produce_buffer->push(tmp);
-        while(! m_produce_buffer->try_push(tmp) && m_work); //use some kind of non-blocking push
+        while(!m_produce_buffer->try_push(tmp) && m_work); //use some kind of non-blocking push
 
     }
-    std::cout << "sig worker finished" << std::endl;
     emit finished();
+    std::cout << "sig worker finished" << std::endl;
 }
-*/
 
 
+/*
 void SigGenProducer::run(void)
 {
     std::cout << "sig worker" << std::endl;
@@ -127,4 +129,5 @@ void SigGenProducer::run(void)
     std::cout << "sig worker finished" << std::endl;
     emit finished();
 }
+*/
 
