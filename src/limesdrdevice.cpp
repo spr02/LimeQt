@@ -103,12 +103,15 @@ LimeSDRDevice::~LimeSDRDevice()
 
 void LimeSDRDevice::connect(QString p_argStr)
 {
-    SoapySDR::Kwargs devicesKwargs;
-    devicesKwargs["cacheCalibrations"]="0";
-    std::cout << "Make device " << p_argStr.toStdString() << std::endl;
+    if(m_connected) return; //only connect once/if no device ist currently connected
+
+    SoapySDR::Kwargs devicesKwargs = SoapySDR::KwargsFromString(p_argStr.toStdString());
+    devicesKwargs["cacheCalibrations"]="0"; //override cacheCalibrationsetting
+    std::cout << "Make device: " << SoapySDR::KwargsToString(devicesKwargs) << std::endl; // p_argStr.toStdString()
     try
     {
-        m_sdr_dev = SoapySDR::Device::make(p_argStr.toStdString());
+        //m_sdr_dev = SoapySDR::Device::make(p_argStr.toStdString());
+        m_sdr_dev = SoapySDR::Device::make(devicesKwargs);
         std::cout << "  driver=" << m_sdr_dev->getDriverKey() << std::endl;
         std::cout << "  hardware=" << m_sdr_dev->getHardwareKey() << std::endl;
         for (const auto &it : m_sdr_dev->getHardwareInfo())
@@ -121,7 +124,6 @@ void LimeSDRDevice::connect(QString p_argStr)
     {
         std::cerr << "Error making device: " << ex.what() << std::endl;
     }
-
 
 
     m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 5.0e6);
@@ -138,15 +140,14 @@ void LimeSDRDevice::connect(QString p_argStr)
     m_sdr_dev->setGain(SOAPY_SDR_TX, 0, "PAD", -50);
     m_sdr_dev->setBandwidth(SOAPY_SDR_TX, 0, 30000000.0);
 
-    //int tmp = m_sdr_dev->readRegister(0x0020);
-    //std::cout << tmp << std::endl;
+
 
     //setup and streams in order to get MTU size
     m_rx_stream = m_sdr_dev->setupStream(SOAPY_SDR_RX, SOAPY_SDR_CS16, {0});
     m_tx_stream = m_sdr_dev->setupStream(SOAPY_SDR_TX, SOAPY_SDR_CS16, {0});
 
-    m_rx_mtu = m_sdr_dev->getStreamMTU(m_rx_stream);
-    m_tx_mtu = m_sdr_dev->getStreamMTU(m_tx_stream);
+    m_rx_mtu = m_sdr_dev->getStreamMTU(m_rx_stream); //1360
+    m_tx_mtu = m_sdr_dev->getStreamMTU(m_tx_stream); //1360
 
     m_sdr_dev->activateStream(m_rx_stream);
     m_sdr_dev->activateStream(m_tx_stream);
@@ -154,10 +155,17 @@ void LimeSDRDevice::connect(QString p_argStr)
     std::cout << "RX Stream MTU: " << m_rx_mtu << ", TX Stream MTU: " << m_tx_mtu << std::endl;
 
     //create stream worker
-    m_rx_stream_worker = new LimeRxStreamWorker(m_sdr_dev, m_rx_stream, 1360, m_rx_buffer[0]);
-    m_tx_stream_worker = new LimeTxStreamWorker(m_sdr_dev, m_tx_stream, 1360, m_tx_buffer[0]);
+    m_rx_stream_worker = new LimeRxStreamWorker(m_sdr_dev, m_rx_stream, m_rx_mtu, m_rx_buffer[0]);
+    m_tx_stream_worker = new LimeTxStreamWorker(m_sdr_dev, m_tx_stream, m_tx_mtu, m_tx_buffer[0]);
 
     m_connected = true;
+
+    const int reg_addr = 0x002F;
+    //int tmp = m_sdr_dev->readRegister(reg_addr); // read FPGA registers
+    int tmp = m_sdr_dev->readRegister("RFIC0", reg_addr); //read LMS7002M registers
+    std::bitset<16> tmp_bin(tmp);
+    std::cout << "reg addr: " << std::hex << reg_addr << ": " << std::dec << tmp << " - " << tmp_bin << std::endl;
+
 }
 
 void LimeSDRDevice::disconnect (void)

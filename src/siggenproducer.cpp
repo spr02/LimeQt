@@ -3,12 +3,14 @@
 #include "stdlib.h"
 #include <random>
 
+#define SINE_FREQ   400000.0 // sine wave frequency in Hz
+
 SigGenProducer::SigGenProducer(QObject *parent) : QObject(parent)
 {
 
     m_j = std::complex<double>(0, 1);
     m_phase_acc = 0.0;
-    m_phase_inc = -2.0 * M_PI * 400000 / 10e6;
+    m_phase_inc = 2.0 * M_PI * SINE_FREQ / 10e6;
     m_pause = false;
 
     for(int i=0;i<32;i++)
@@ -68,29 +70,38 @@ void SigGenProducer::run(void)
         m_pause_mutex.unlock();
 
 
-        conv_array_real[idx] = (std::rand() % 2 * 8192) - 8192;
-        conv_array_imag[idx] = (std::rand() % 2 * 8192) - 8192;
+        /*** generate lp-filtered noise ***/
+//        conv_array_real[idx] = (std::rand() % 2 * 8192) - 8192;
+//        conv_array_imag[idx] = (std::rand() % 2 * 8192) - 8192;
 
-        tmp_real = 0;
-        tmp_imag = 0;
+//        tmp_real = 0;
+//        tmp_imag = 0;
 
-        for(int i=0;i<32;i++)
-        {
-            tmp_real += conv_array_real[(i + idx) & 31] * coeff[i];
-            tmp_imag += conv_array_imag[(i + idx) & 31] * coeff[i];
-        }
+//        //low pass filter (coefficients generated using matlab)
+//        for(int i=0;i<32;i++)
+//        {
+//            tmp_real += conv_array_real[(i + idx) & 31] * coeff[i];
+//            tmp_imag += conv_array_imag[(i + idx) & 31] * coeff[i];
+//        }
 
-        idx = (idx + 1) & 31;
+//        idx = (idx + 1) & 31;
 
-        std::complex<int16_t> tmp(tmp_real, tmp_imag);
+//        std::complex<int16_t> tmp(tmp_real, tmp_imag);
 
-
-//        std::complex<int16_t> tmp((std::rand() % 2 * 8192) - 8192, (std::rand() % 2 * 8192) - 8192);
-
-        //std::complex<int16_t> tmp = 8192.0 * std::exp(m_j * m_phase_acc);
+        //not needed
+        /*
+        //std::complex<int16_t> tmp((std::rand() % 2 * 8192) - 8192, (std::rand() % 2 * 8192) - 8192);
         //std::complex<int16_t> tmp((std::rand() % 2*8192)-8192, (std::rand() % 2*8192)-8192);
         //std::complex<int16_t> tmp(8192.0 * dist(generator), 8192.0 * dist(generator));
+        */
 
+        /*** generate sine-wave ***/
+        std::complex<int16_t> tmp = 8192.0 * std::exp(m_j * m_phase_acc);
+        m_phase_acc += m_phase_inc;
+        while(m_phase_acc > 2 * M_PI) m_phase_acc -= 2 * M_PI;
+        while(m_phase_acc < 2 * M_PI) m_phase_acc += 2 * M_PI;
+
+        /*** fill buffer **/
         //m_produce_buffer->push(tmp);
         while(!m_produce_buffer->try_push(tmp) && m_work); //use some kind of non-blocking push
 

@@ -86,26 +86,30 @@ void FFTConsumer::run(void)
     while(m_work)
     {
 
+        //check if thread paused
         m_pause_mutex.lock();
         if(m_pause) m_pause_cond.wait(&m_pause_mutex);
         m_pause_mutex.unlock();
 
+        //get 1024 samples from buffer
         for(int k=0;k<1024;k++)
         {
             std::complex<int16_t> tmp;
             //std::complex<int16_t> tmp = m_consume_buffer->pop();
-            while(!m_consume_buffer->try_pop(&tmp) && m_work);
-            m_fft_window[k] = alglib::complex(w_window[k]*tmp.real(), w_window[k]*tmp.imag());
+            while(!m_consume_buffer->try_pop(&tmp) && m_work); //pop one sample from queue
+            m_fft_window[k] = alglib::complex(w_window[k]*tmp.real(), w_window[k]*tmp.imag()); //apply window function w_window and save into buffer
         }
 
+        //apply fft
         alglib::fftc1d(m_fft_window, 1024);
 
-
+        //compute power spectrum
         for(int i=0;i<1024;i++)
         {
             y_val[i] += (m_fft_window[i].x*m_fft_window[i].x + m_fft_window[i].y * m_fft_window[i].y)/4096;
         }
 
+        //calculate mean value if AVG_COUNT is reached and plot it
         if(cnt == AVG_COUNT)
         {
             for(int i=0;i<1024;i++)

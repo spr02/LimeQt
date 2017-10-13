@@ -80,7 +80,7 @@ MainWindow::~MainWindow()
     delete ui;
 
     m_sine_gen->stop();
-    m_sine_gen_thread->quit();  //call quit here as unfortunately the connect of worker finished signal an QThread quit slot does not work in the constructor
+    m_sine_gen_thread->quit();  //call quit() here as unfortunately the connect of worker finished signal an QThread quit slot does not work in the constructor
     m_sine_gen_thread->wait();
     delete m_sine_gen_thread;
     delete m_sine_gen;
