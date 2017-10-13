@@ -26,8 +26,7 @@ I think there are many improvements that can be made, but currently i lack of th
 
 
 ### Block Schematic
-<!-- language: lang-none -->
-
+```
                        +--------------------------------------------------+
                        |                                                  |
                        |                   LimeSDRConfig                  |
@@ -50,3 +49,4 @@ I think there are many improvements that can be made, but currently i lack of th
 +----------------+     |  +-----------------+     +--------------------+  |
                        |                                                  |
                        +--------------------------------------------------+
+```
