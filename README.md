@@ -29,7 +29,7 @@ I think there are many improvements that can be made, but currently i lack of th
 ```
                        +--------------------------------------------------+
                        |                                                  |
-                       |                   LimeSDRConfig                  |
+                       |                   LimeSDRConfig                   |
                        |                                                  |
                        +-------------------------+------------------------+
                                                  |
@@ -38,13 +38,13 @@ I think there are many improvements that can be made, but currently i lack of th
                        |                                                  |
 +----------------+     |  +-----------------+     +--------------------+  |
 |                |     |  |                 |     |                    |  |
-| FFTConsumer    <--------+ RingBufferSPSC  <-----+ LimeRxStreamWorker |  |
+| FFTConsumer    <--------+ RingBufferSPSC   <-----+ LimeRxStreamWorker |  |
 |                |     |  |                 |     |                    |  |
 +----------------+     |  +-----------------+     +--------------------+  |
                        |                                                  |
 +----------------+     |  +-----------------+     +--------------------+  |
 |                |     |  |                 |     |                    |  |
-| SigGenProducer +--------> RingBufferSPSC  +-----> LimeTxStreamWorker |  |
+| SigGenProducer +--------> RingBufferSPSC   +-----> LimeTxStreamWorker |  |
 |                |     |  |                 |     |                    |  |
 +----------------+     |  +-----------------+     +--------------------+  |
                        |                                                  |
