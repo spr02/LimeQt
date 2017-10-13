@@ -24,6 +24,7 @@ Currently the application uses four threads, that communicate through the thread
 
 I think there are many improvements that can be made, but currently i lack of the time to further dig into the LimeSDR. Tough if anyone does implement some improvements, feel free to contact me/share them with the community.
 
+Also i did not have a deeper look into the SoapySDR sources, most likely this code design introduces a lot of redundant buffering. Furthermore the threads currently use spin locks which are quite a waste of CPU resources i think. To conclude there is a lot of room for improvements :)
 
 ### Block Schematic
 ```
