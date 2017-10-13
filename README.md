@@ -13,7 +13,7 @@ pacaur -S alglib
 ```
 
 ## Build
-Simply fire up QtCreator, load the LimeQt.pro and hit build.
+Simply fire up QtCreator, load the LimeQt.pro, configure project and hit build.
 
 ## Run
 The application could be run directly or run through QTCreator. For the basic example application, first connect the LimeSDR using the connect button. Then hit the start button in order to start streaming and if done the stop button. 
@@ -26,6 +26,7 @@ I think there are many improvements that can be made, but currently i lack of th
 
 
 ### Block Schematic
+<!-- language: lang-none -->
 
                        +--------------------------------------------------+
                        |                                                  |
