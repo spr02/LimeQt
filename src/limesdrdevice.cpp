@@ -126,7 +126,7 @@ void LimeSDRDevice::connect(QString p_argStr)
     }
 
 
-    m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 5.0e6);
+    m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 10.0e6);
     m_sdr_dev->setFrequency(SOAPY_SDR_RX, 0, 106.0e6);
     m_sdr_dev->setAntenna(SOAPY_SDR_RX, 0, "LNAL");
     m_sdr_dev->setGain(SOAPY_SDR_RX, 0, "LNA", 15.0);
@@ -160,12 +160,19 @@ void LimeSDRDevice::connect(QString p_argStr)
 
     m_connected = true;
 
+/*
+    const int reg_addr_fpga = 26;
+    const int led_val = (3<<3); //set FPGA_LED2_CTRL to 101
+    //m_sdr_dev->writeRegister(reg_addr_fpga, led_val);
+    int tmp = m_sdr_dev->readRegister(reg_addr_fpga); // read FPGA registers
+    std::bitset<16> tmp_bin_fpga(tmp);
+    std::cout << "reg addr: " << std::hex << reg_addr_fpga << ": " << std::dec << tmp << " - " << tmp_bin_fpga << std::endl;
+
     const int reg_addr = 0x002F;
-    //int tmp = m_sdr_dev->readRegister(reg_addr); // read FPGA registers
-    int tmp = m_sdr_dev->readRegister("RFIC0", reg_addr); //read LMS7002M registers
+    tmp = m_sdr_dev->readRegister("RFIC0", reg_addr); //read LMS7002M registers
     std::bitset<16> tmp_bin(tmp);
     std::cout << "reg addr: " << std::hex << reg_addr << ": " << std::dec << tmp << " - " << tmp_bin << std::endl;
-
+*/
 }
 
 void LimeSDRDevice::disconnect (void)
@@ -252,9 +259,25 @@ void LimeSDRDevice::stopTxStream (void)
 }
 
 
+int LimeSDRDevice::readReg(std::string p_dev, int p_addr)
+{
+    if(!m_connected) return -1;
+    return m_sdr_dev->readRegister(p_dev, p_addr);
+}
+
+
+void LimeSDRDevice::writeReg(std::string p_dev, int p_addr, int p_value)
+{
+    if(!m_connected) return;
+    m_sdr_dev->writeRegister(p_dev, p_addr, p_value);
+}
+
+
+
 //setter for rx part
 void LimeSDRDevice::setRxLoFreq(double p_freq, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setFrequency(SOAPY_SDR_RX, p_chan, p_freq);
@@ -266,6 +289,7 @@ void LimeSDRDevice::setRxLoFreq(double p_freq, int p_chan)
 
 void LimeSDRDevice::setRxFIR_BW(double p_bw, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setBandwidth(SOAPY_SDR_RX, p_chan, p_bw);
@@ -277,6 +301,7 @@ void LimeSDRDevice::setRxFIR_BW(double p_bw, int p_chan)
 
 void LimeSDRDevice::setRxSampRate(double p_rate, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setSampleRate(SOAPY_SDR_RX, p_chan, p_rate);
@@ -288,6 +313,7 @@ void LimeSDRDevice::setRxSampRate(double p_rate, int p_chan)
 
 void LimeSDRDevice::setLNA(int p_gain, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setGain(SOAPY_SDR_RX, p_chan, "LNA", p_gain);
@@ -299,6 +325,7 @@ void LimeSDRDevice::setLNA(int p_gain, int p_chan)
 
 void LimeSDRDevice::setTIA(int p_gain, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setGain(SOAPY_SDR_RX, p_chan, "TIA", p_gain);
@@ -310,6 +337,7 @@ void LimeSDRDevice::setTIA(int p_gain, int p_chan)
 
 void LimeSDRDevice::setPGA(int p_gain, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setGain(SOAPY_SDR_RX, p_chan, "PGA", p_gain);
@@ -321,6 +349,7 @@ void LimeSDRDevice::setPGA(int p_gain, int p_chan)
 
 void LimeSDRDevice::setRxAntenna(std::string p_ant, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setAntenna(SOAPY_SDR_RX, p_chan, p_ant);
@@ -340,6 +369,7 @@ RingBufferSPSC<std::complex<int16_t>>* LimeSDRDevice::getRxBuffer (int p_chan)
 //setter for tx part
 void LimeSDRDevice::setTxLoFreq(double p_freq, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setFrequency(SOAPY_SDR_TX, p_chan, p_freq);
@@ -351,6 +381,7 @@ void LimeSDRDevice::setTxLoFreq(double p_freq, int p_chan)
 
 void LimeSDRDevice::setTxFIR_BW(double p_bw, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setBandwidth(SOAPY_SDR_TX, p_chan, p_bw);
@@ -362,6 +393,7 @@ void LimeSDRDevice::setTxFIR_BW(double p_bw, int p_chan)
 
 void LimeSDRDevice::setTxSampRate(double p_rate, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setSampleRate(SOAPY_SDR_TX, p_chan, p_rate);
@@ -373,6 +405,7 @@ void LimeSDRDevice::setTxSampRate(double p_rate, int p_chan)
 
 void LimeSDRDevice::setPAD(int p_gain, int p_chan)
 {
+    if(!m_connected) return;
     try
     {
         m_sdr_dev->setGain(SOAPY_SDR_TX, p_chan, "PAD", p_gain);

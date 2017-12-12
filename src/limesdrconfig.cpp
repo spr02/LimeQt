@@ -1,6 +1,8 @@
 #include "limesdrconfig.h"
 #include "ui_limesdrconfig.h"
 #include <iostream>
+#include <sstream>
+#include <bitset>
 
 LimeSDRConfig::LimeSDRConfig(QWidget *parent) :
     QWidget(parent),
@@ -31,6 +33,16 @@ LimeSDRConfig::LimeSDRConfig(QWidget *parent) :
     QObject::connect(ui->pga_spin,SIGNAL(valueChanged(int)), ui->pga_slider, SLOT(setValue(int)));
     QObject::connect(ui->pad_slider,SIGNAL(valueChanged(int)), ui->pad_spin, SLOT(setValue(int))); //pad
     QObject::connect(ui->pad_spin,SIGNAL(valueChanged(int)), ui->pad_slider, SLOT(setValue(int)));
+
+
+    //register access
+    ui->reg_addr_line->setText("0");
+    m_reg_addr_format = dec;
+    m_reg_addr = 0;
+    ui->reg_value_line->setText("0000000000000000");
+    m_reg_value_format = bin;
+    m_reg_value = 0;
+
 }
 
 LimeSDRConfig::~LimeSDRConfig()
@@ -211,4 +223,192 @@ void LimeSDRConfig::on_tx_antenna_combo_currentTextChanged(const QString &arg1)
 
 
 
+//////////////////// SLOTS for buttons and value changed for register access ////////////////////
 
+/////// Helpers ///////
+
+QString LimeSDRConfig::dec2bin (const QString &p_str, int *p_int)
+{
+    *p_int = std::stoi(p_str.toStdString().c_str(), nullptr, 10);
+    std::bitset<16> tmp(*p_int);
+    return QString(tmp.to_string().c_str());
+}
+QString LimeSDRConfig::dec2hex (const QString &p_str, int *p_int)
+{
+    *p_int = std::stoi(p_str.toStdString().c_str(), nullptr, 10);
+    std::stringstream tmp;
+    tmp << std::hex << *p_int;
+    return QString(tmp.str().c_str());
+}
+
+QString LimeSDRConfig::hex2dec (const QString &p_str, int *p_int)
+{
+    *p_int = std::stoi(p_str.toStdString().c_str(), nullptr, 16);
+    return QString(std::to_string(*p_int).c_str());
+}
+QString LimeSDRConfig::hex2bin (const QString &p_str, int *p_int)
+{
+    *p_int = std::stoi(p_str.toStdString().c_str(), nullptr, 16);
+    std::bitset<16> tmp(*p_int);
+    return QString(tmp.to_string().c_str());
+}
+
+QString LimeSDRConfig::bin2dec (const QString &p_str, int *p_int)
+{
+    *p_int = std::stoi(p_str.toStdString().c_str(), nullptr, 2);
+    return QString(std::to_string(*p_int).c_str());
+}
+
+QString LimeSDRConfig::bin2hex (const QString &p_str, int *p_int)
+{
+    *p_int = std::stoi(p_str.toStdString().c_str(), nullptr, 2);
+    std::stringstream tmp;
+    tmp << std::hex << *p_int;
+    return QString(tmp.str().c_str());
+}
+
+
+/////// Buttons //////
+void LimeSDRConfig::on_reg_read_clicked()
+{
+    //read register value
+    int reg_addr = m_reg_addr;
+    std::string reg_dev = ui->reg_dev_combo->currentText().toStdString();
+    int reg_val = m_sdr_dev->readReg(reg_dev, reg_addr);
+
+    //set value line edit
+    QString tmp(std::to_string(reg_val).c_str());
+    if(m_reg_value_format == dec)
+    {
+        ui->reg_value_line->setText(tmp);
+    }
+    else if(m_reg_value_format == hex)
+    {
+        ui->reg_value_line->setText(dec2hex(tmp, &reg_val));
+    }
+    else
+    {
+        ui->reg_value_line->setText(dec2bin(tmp, &reg_val));
+    }
+    std::bitset<16> tmp_bit(reg_val);
+    std::cout << "Reading from: " << reg_dev << " at addr: " << reg_addr << " the value: " << tmp_bit.to_string() << " - " << reg_val << std::endl;
+
+    //save register value in member variable
+    m_reg_value = reg_val;
+}
+
+void LimeSDRConfig::on_reg_write_clicked()
+{
+    int reg_addr = m_reg_addr;
+    int reg_val = m_reg_value & 0xFFFF;
+    std::string reg_dev = ui->reg_dev_combo->currentText().toStdString();
+    std::bitset<16> tmp(reg_val);
+
+    std::cout << "Writing to: " << reg_dev << " at addr: " << reg_addr << " the value: " << tmp.to_string() << " - " << reg_val << std::endl;
+    m_sdr_dev->writeReg(reg_dev, reg_addr, reg_val);
+}
+
+/////// Address Radio Buttons ///////
+
+void LimeSDRConfig::on_reg_addr_hex_clicked()
+{
+    ui->reg_addr_hex->setChecked(true);
+    ui->reg_addr_dec->setChecked(false);
+    if(m_reg_addr_format == dec)
+    {
+        ui->reg_addr_line->setText(dec2hex(ui->reg_addr_line->text(), &m_reg_addr));
+    }
+    m_reg_addr_format = hex;
+}
+
+void LimeSDRConfig::on_reg_addr_dec_clicked()
+{
+    ui->reg_addr_hex->setChecked(false);
+    ui->reg_addr_dec->setChecked(true);
+    if(m_reg_addr_format == hex)
+    {
+        //m_reg_addr = std::stoi(ui->reg_value_line->text().toStdString(), nullptr, 16);
+        ui->reg_addr_line->setText(hex2dec(ui->reg_addr_line->text(), &m_reg_addr));
+    }
+    m_reg_addr_format = dec;
+}
+
+/////// Value Radio Buttons ///////
+
+void LimeSDRConfig::on_reg_value_hex_clicked()
+{
+    ui->reg_value_hex->setChecked(true);
+    ui->reg_value_bin->setChecked(false);
+    ui->reg_value_dec->setChecked(false);
+    if(m_reg_value_format == dec)
+    {
+        ui->reg_value_line->setText(dec2hex(ui->reg_value_line->text(), &m_reg_value));
+    }
+    else if (m_reg_value_format == bin)
+    {
+        ui->reg_value_line->setText(bin2hex(ui->reg_value_line->text(), &m_reg_value));
+    }
+    m_reg_value_format = hex;
+}
+
+void LimeSDRConfig::on_reg_value_bin_clicked()
+{
+    ui->reg_value_hex->setChecked(false);
+    ui->reg_value_bin->setChecked(true);
+    ui->reg_value_dec->setChecked(false);
+    if(m_reg_value_format == dec)
+    {
+        ui->reg_value_line->setText(dec2bin(ui->reg_value_line->text(), &m_reg_value));
+    }
+    else if (m_reg_value_format == hex)
+    {
+        ui->reg_value_line->setText(hex2bin(ui->reg_value_line->text(), &m_reg_value));
+    }
+    m_reg_value_format = bin;
+}
+
+void LimeSDRConfig::on_reg_value_dec_clicked()
+{
+    ui->reg_value_hex->setChecked(false);
+    ui->reg_value_bin->setChecked(false);
+    ui->reg_value_dec->setChecked(true);
+    if(m_reg_value_format == bin)
+    {
+        ui->reg_value_line->setText(bin2dec(ui->reg_value_line->text(), &m_reg_value));
+    }
+    else if (m_reg_value_format == hex)
+    {
+        ui->reg_value_line->setText(hex2dec(ui->reg_value_line->text(), &m_reg_value));
+    }
+    m_reg_value_format = dec;
+}
+
+/////// Line Edit ///////
+
+void LimeSDRConfig::on_reg_addr_line_textEdited(const QString &arg1)
+{
+    if(m_reg_addr_format == dec)
+    {
+        dec2bin(arg1, &m_reg_addr);
+    }
+    else
+    {
+        hex2bin(arg1, &m_reg_addr);
+    }
+}
+
+void LimeSDRConfig::on_reg_value_line_textEdited(const QString &arg1)
+{
+    if(m_reg_value_format == dec)
+    {
+        dec2bin(arg1, &m_reg_value);
+    }
+    else if(m_reg_value_format == hex)
+    {
+        hex2bin(arg1, &m_reg_value);
+    }
+    else
+    {
+        bin2dec(arg1, &m_reg_value);
+    }
+}

@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_sine_gen_thread->start();
 
     //make fft plot (consumer) + thread and connect it to the updatePlot function
+    /*
     m_fft_consume_thread = new QThread();
     m_fft_plot = new FFTConsumer();
     m_fft_plot->setBuffer(LimeSDR->getRxBuffer());
@@ -72,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     plot->setCanvasBackground( Qt::white );
     //plot->setAxisScale( QwtPlot::yLeft, 0.0, 10.0);
     plot->show();
-
+    */
 }
 
 MainWindow::~MainWindow()

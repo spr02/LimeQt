@@ -43,6 +43,10 @@ public:
     /////////////////////// CALIBRATION ////////////////////
 
 
+    /////////////////////// Register ///////////////////////
+    int readReg(std::string p_dev, int p_addr);
+    void writeReg(std::string p_dev, int p_addr, int p_value);
+
     /////////////////////// RX PART ////////////////////////
     void setRxFIR_BW(double p_bw, int p_chan = 0);
     void setRxSampRate(double p_rate, int p_chan = 0);

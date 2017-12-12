@@ -64,6 +64,28 @@ private slots:
     //rate and buffer usage update
     void update_rate (void);
 
+    //register access
+    QString dec2bin (const QString &p_str, int *p_int);
+    QString dec2hex (const QString &p_str, int *p_int);
+    QString hex2dec (const QString &p_str, int *p_int);
+    QString hex2bin (const QString &p_str, int *p_int);
+    QString bin2dec (const QString &p_str, int *p_int);
+    QString bin2hex (const QString &p_str, int *p_int);
+
+    void on_reg_read_clicked();
+    void on_reg_write_clicked();
+
+    void on_reg_addr_hex_clicked();
+    void on_reg_addr_dec_clicked();
+
+    void on_reg_value_hex_clicked();
+    void on_reg_value_bin_clicked();
+    void on_reg_value_dec_clicked();
+
+    void on_reg_addr_line_textEdited(const QString &arg1);
+
+    void on_reg_value_line_textEdited(const QString &arg1);
+
 signals:
     void stop_consumer (void);
     void stop_producer (void);
@@ -85,6 +107,13 @@ private:
     uint64_t m_rx_tail;
     uint64_t m_tx_head;
     uint64_t m_tx_tail;
+
+    //variables for register access
+    enum reg_format {hex, bin, dec};
+    reg_format m_reg_addr_format;
+    int m_reg_addr;
+    reg_format m_reg_value_format;
+    int m_reg_value;
 
 };
 
