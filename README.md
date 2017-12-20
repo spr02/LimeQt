@@ -39,13 +39,13 @@ Also i did not have a deeper look into the SoapySDR sources, most likely this co
                        |                                                  |
 +----------------+     |  +-----------------+     +--------------------+  |
 |                |     |  |                 |     |                    |  |
-| FFTConsumer    <--------+ RingBufferSPSC   <-----+ LimeRxStreamWorker |  |
+| FFTConsumer    <--------+ RingBufferSPSC  <-----+ LimeRxStreamWorker |  |
 |                |     |  |                 |     |                    |  |
 +----------------+     |  +-----------------+     +--------------------+  |
                        |                                                  |
 +----------------+     |  +-----------------+     +--------------------+  |
 |                |     |  |                 |     |                    |  |
-| SigGenProducer +--------> RingBufferSPSC   +-----> LimeTxStreamWorker |  |
+| SigGenProducer +--------> RingBufferSPSC  +-----> LimeTxStreamWorker |  |
 |                |     |  |                 |     |                    |  |
 +----------------+     |  +-----------------+     +--------------------+  |
                        |                                                  |
