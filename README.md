@@ -30,7 +30,7 @@ Also i did not have a deeper look into the SoapySDR sources, most likely this co
 ```
                        +--------------------------------------------------+
                        |                                                  |
-                       |                   LimeSDRConfig                   |
+                       |                   LimeSDRConfig                  |
                        |                                                  |
                        +-------------------------+------------------------+
                                                  |

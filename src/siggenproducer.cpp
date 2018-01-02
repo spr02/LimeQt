@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include <random>
 
-#define SINE_FREQ   400000.0 // sine wave frequency in Hz
+#define SINE_FREQ   2000000.0 // sine wave frequency in Hz
 
 SigGenProducer::SigGenProducer(QObject *parent) : QObject(parent)
 {
