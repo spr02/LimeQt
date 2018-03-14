@@ -1,6 +1,6 @@
 #include "fftconsumer.h"
 
-#define AVG_COUNT 256
+#define AVG_COUNT 128
 
 FFTConsumer::FFTConsumer(QObject *parent) : QObject(parent)
 {
@@ -114,7 +114,7 @@ void FFTConsumer::run(void)
         {
             for(int i=0;i<1024;i++)
             {
-                y_val[i] = std::log10(y_val[i] / 8);
+                y_val[i] = 20*std::log10(y_val[i] / AVG_COUNT);
             }
             circshift(y_val, y_plt, 1024, 512); // circular shift to get centered around 0 with +-Fs/2
             for(int i=0;i<1024;i++)

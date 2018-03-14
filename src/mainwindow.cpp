@@ -85,6 +85,8 @@ MainWindow::~MainWindow()
     delete m_sine_gen_thread;
     delete m_sine_gen;
 
+    std::cout << "deleted siggen thread"<< std::endl;
+
     m_fft_plot->stop();
     m_fft_consume_thread->quit();
     m_fft_consume_thread->wait();
@@ -93,8 +95,6 @@ MainWindow::~MainWindow()
 
     std::cout << "deleted fft thread"<< std::endl;
 
-
-    std::cout << "delete limesdr2" << std::endl;
     delete LimeSDR;
     delete LimeConfigureUI;
 }

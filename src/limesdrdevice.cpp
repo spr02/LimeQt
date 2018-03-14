@@ -126,7 +126,7 @@ void LimeSDRDevice::connect(QString p_argStr)
     }
 
 
-    m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 10.0e6);
+    m_sdr_dev->setSampleRate(SOAPY_SDR_RX, 0, 5.0e6);
     m_sdr_dev->setFrequency(SOAPY_SDR_RX, 0, 106.0e6);
     m_sdr_dev->setAntenna(SOAPY_SDR_RX, 0, "LNAL");
     m_sdr_dev->setGain(SOAPY_SDR_RX, 0, "LNA", 15.0);
